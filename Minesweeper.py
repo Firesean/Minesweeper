@@ -83,7 +83,8 @@ class Minesweeper:
                     self.board[index_x][index_y].set_bomb()
                     break
 # Cells Related
-    def different_cell(self, cell_1, cell_2): # Determines separate cells
+    @staticmethod
+    def different_cell(cell_1, cell_2): # Determines separate cells
         if isinstance(cell_2, Cell) and (cell_1.x_pos, cell_1.y_pos) != (cell_2.x_pos, cell_2.y_pos):
             return True
         return False
