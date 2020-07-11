@@ -2,26 +2,35 @@ import tkinter as tk
 from tkinter import messagebox
 
 class Interface:
+
+    CANVAS_CLR = "light grey"
+    ICON_CLR = "black"
     LINE_WIDTH = 3
+    LOST_CLR = "red"
     LOST_TEXT = "YOU LOSE"
+    SMILEY_CLR = "yellow"
     TIMER = 1000
     U_FLAG = u"\u2691"
     U_BOMB = u"\u2699"
+    WON_CLR = "green"
     WON_TEXT = "YOU WIN"
-    menu = None
-    new_game_menu = None
+    WIN_BG = "snow4"
+
     bombs_menu = None
     board_size_menu = None
     colors = ["black", "blue", "green", "red", "purple", "maroon", "turquoise", "black", "gray"]
+    menu = None
+    new_game_menu = None
+
 
     def __init__(self, root, window_size, game, icon_path):
         self.root = root
         self.window_size = window_size
         self.game = game
-        self.spacer = lambda : int(self.window_size / self.game.board_size)
+        self.get_spacer = lambda : int(self.window_size / self.game.board_size)
         self.canvas = tk.Canvas(self.root, width=self.window_size, height=self.window_size)
         self.icon_path = icon_path
-        self.font_style = f"TimesNewRoman {0} bold".format(self.spacer())
+        self.font_style = lambda : "TimesNewRoman {} bold".format(self.get_spacer())
 
         # Main
         self.set_up_interface()
@@ -30,9 +39,10 @@ class Interface:
 
 
     def default_window(self):
+        self.root.config(bg=self.WIN_BG)
         self.root.bind("<Button-1>", lambda event: self.reveal_cell(event))
         self.root.bind("<Button-3>", lambda event: self.check_cell(event))
-        self.root.geometry("{0}x{0}".format(self.window_size+self.spacer())) # Window Size
+        self.root.geometry("{0}x{0}".format(self.window_size + self.get_spacer())) # Window Size
         self.root.title("{}".format(type(self.game).__name__)) # Window Title
         self.root.iconbitmap("{}".format(self.icon_path)) # Icon Picture
         self.root.resizable(width=False, height=False) # Cannot be resize
@@ -66,7 +76,7 @@ class Interface:
 
     def draw_lines(self):
         for lines_over in range(0, len(self.game.board)):
-            line_pos = lines_over * self.spacer()
+            line_pos = lines_over * self.get_spacer()
             self.canvas.create_line(line_pos, 0, line_pos, self.window_size, width=self.LINE_WIDTH) # Vertical V ^
             self.canvas.create_line(0, line_pos, self.window_size, line_pos, width=self.LINE_WIDTH) # Horizontal
         self.canvas.create_rectangle(2, 2, self.window_size, self.window_size, width=self.LINE_WIDTH)
@@ -76,25 +86,25 @@ class Interface:
             for cell in row:
                 if cell.is_flagged():
                     _text = self.U_FLAG
-                    clr = "black"
+                    clr = self.ICON_CLR
                 elif not cell.is_revealed():
                     continue
                 elif cell.is_bomb():
                     _text = self.U_BOMB
-                    clr = "black"
+                    clr = self.ICON_CLR
                 else:
                     _text = cell.bombs_around
                     clr = self.colors[_text]
-                self.canvas.create_text(cell.x_pos * self.spacer() + (self.spacer()/2),
-                                        cell.y_pos * self.spacer() + (self.spacer()/2),
+                self.canvas.create_text(cell.x_pos * self.get_spacer() + (self.get_spacer() / 2),
+                                        cell.y_pos * self.get_spacer() + (self.get_spacer() / 2),
                                         text=_text, font=self.font_style, fill=clr)
 # Update Information
     def update_interface(self):
         self.canvas.destroy()
-        self.canvas = tk.Canvas(self.root, width=self.window_size, height=self.window_size)
+        self.canvas = tk.Canvas(self.root, width=self.window_size, height=self.window_size, border=0, bg=self.CANVAS_CLR)
         self.canvas.place(relx=.5, rely=.52, anchor=tk.CENTER)
         smiley = tk.Button(self.root, text=u"\u263A", font=self.font_style,
-                           height=0, width=0, bg="yellow", command=lambda : self.new_game())
+                           height=0, width=0, bg=self.SMILEY_CLR, command=lambda : self.new_game())
         smiley.place(relx=.48, y=0)
         self.draw_lines()
         self.draw_board()
@@ -102,29 +112,29 @@ class Interface:
 
     def check_game(self):
         if self.game.get_game_lost():
-            self.display_big_text(self.LOST_TEXT, "red")
+            self.display_big_text(self.LOST_TEXT, self.LOST_CLR)
         elif self.game.get_game_won():
-            self.display_big_text(self.WON_TEXT, "green")
+            self.display_big_text(self.WON_TEXT, self.WON_CLR)
 
     def reveal_cell(self, event=None):
         if event:
             x, y = event.x, event.y
-            offset = self.spacer() / 2
+            offset = self.get_spacer() / 2
             if x < offset or y < offset: # Makes sure you are on the board interface
                 return
-        row = int(event.x / self.spacer())
-        col = int(event.y / self.spacer())
+        row = int(event.x / self.get_spacer())
+        col = int(event.y / self.get_spacer())
         self.game.reveal_cell(row, col)
         self.update_interface()
 
     def check_cell(self, event=None):
         if event:
             x, y = event.x, event.y
-            offset = self.spacer() / 2
+            offset = self.get_spacer() / 2
             if x < offset or y < offset: # Makes sure you are on the board interface
                 return
-        row = int(event.x / self.spacer())
-        col = int(event.y / self.spacer())
+        row = int(event.x / self.get_spacer())
+        col = int(event.y / self.get_spacer())
         self.game.flag_cell(row, col)
         self.update_interface()
 # Resets
@@ -134,7 +144,7 @@ class Interface:
 
     def display_big_text(self, text, color): # Display Text
         pos = self.window_size/2
-        self.canvas.create_text(pos, pos, text=text, fill=color, font="TimeNewsRoman {} bold".format(self.spacer()))
+        self.canvas.create_text(pos, pos, text=text, fill=color, font=self.font_style())
         messagebox.showinfo(type(self.game).__name__, text)
         self.new_game()
 
