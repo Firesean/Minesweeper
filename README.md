@@ -5,4 +5,5 @@ The bigger the number the more dangerous the square, the smaller the number the 
 - The latest version of Python
 
 Similar design of the image below
+
 <img src='https://minesweeper.online/img/homepage/expert.png'></img>
